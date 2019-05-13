@@ -1,0 +1,80 @@
+\documentclass[12pt, thesis]{fmt/OUMastersThesis} %draft
+
+%Imports
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{svg}
+\graphicspath{ {./images} }
+
+\usepackage{soul}
+%\newcommand{\update}[1]{\hl{#1}}
+\newcommand{\update}[1]{#1}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+
+%\usepackage{hyperref}
+\usepackage{longtable, booktabs}
+
+\usepackage{listings}
+
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
+
+\begin{document}
+
+% Document Overview
+\title{Evaluating GAM-like Neural Network Architectures for Interpretable Machine Learning}
+\author{William Booker}
+\majorfield{School of Computer Science}
+\depositdate{2019}
+\memberone{Dr. Amy McGovern, Chair} 
+\membertwo{Dr. Dean Hougen}
+\memberthree{Dr. Christan Grant}
+
+\begin{preface}
+   
+\prefacesection{Acknowledgements}
+\input{tex/acknowledgements.tex}
+
+\tableofcontents
+\listoffigures
+
+\prefacesection{Abstract}
+\input{tex/abstract.tex}
+
+\end{preface}
+
+\chapter{Introduction}
+\label{chap:introduction}
+\input{tex/introduction}
+
+\chapter{Background}
+\label{chap:background}
+\input{tex/background}
+
+\chapter{Methods}
+\label{chap:methods}
+\input{tex/methods}
+
+\chapter{Experiments}
+\input{tex/exp/overview.tex}
+\input{tex/exp/experiment1.tex}
+\input{tex/exp/experiment2.tex}
+\input{tex/exp/experiment3.tex}
+\input{tex/exp/experiment4.tex}
+\input{tex/exp/experiment5.tex}
+
+\chapter{Conclusion}
+\label{chap:conclusion}
+\input{tex/conclusion.tex}
+
+\OUsinglespace
+\references{fmt/amermeteorsoc}{mendeley}
+
+\chapter{Appendix}
+\input{tex/code.tex}
+
+\end{document}

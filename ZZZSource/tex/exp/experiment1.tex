@@ -1,0 +1,58 @@
+
+\section{GAM Approximation Validation}
+
+\subsection{Setup}
+
+Testing hypothesis \textbf{H1}. \textit{\update{Our network architecture is interpretable and will closely approximate GAM behavior.}}
+
+Experiment one is designed to empirically demonstrate that our neural network architecture will exhibit GAM-like behavior in real-world classification tasks. For this experiment, we compare our architecture against the PyGAM implementation with 10 b-splines on the ellipse dataset. We report the similarity of the predictions using cosine similarity and plots of the marginals are provided for visual analysis. \update{Note, while Euclidean and cosine similarities provide similar results in this instance, we report the cosine similarity due to known issues with Euclidean distance in high-dimensional spaces} \citep{Domingos2012ALearning}. 
+
+
+\subsection{Results}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ccc}
+        \toprule
+        Network Accuracy & GAM Accuracy & Cosine Similarity \\
+        \midrule
+        0.967 &  0.967 &  0.997 \\
+        \bottomrule
+    \end{tabular}
+\caption{Similarity of network and GAM predictions. Both methods arrived at approximately the same result.}
+\end{table}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/MNN_Ellipse.svg}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/GAM_Ellipse.svg}
+\end{subfigure}
+\caption{Model predictions for both our network and a GAM on the ellipse dataset. Color represents the model prediction, with blue being more positive, red being more negative, and yellow being approximately neutral. X's are true negatives and O's are true positives. Both model facilitate a positive, circular region centered around (0,0) with a ring of uncertainty corresponding to the elliptical section of the input space.}
+\label{fig:ellipse}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/Ellipse_X1.svg}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/Ellipse_X2.svg}
+\end{subfigure}
+\caption{Marginal distributions for the $x_1$ and $x_2$ variables for both our network and a GAM in the ellipse dataset. Both methods produce symmetric, unimodal distributions centered at zero and negative at the extremes.}
+\label{fig:ellipse_marginals}
+\end{figure}
+
+
+\subsection{Analysis}
+
+The results from this experiment support our hypothesis that we can generate GAM-like behavior using our neural network architecture. Both models generate a circular region centered at point (0,0) but fail to account for the correlated regions in quadrants I and III. The accuracy of both models is approximately 96\% and the cosine similarity of the predictions is 0.997. These results suggest that our architecture is effectively equivalent to a GAM, and both techniques have roughly the same power. 
+
+One important caveat to this conclusion is the stark difference in how each model arrives at its predictions. While the GAM's marginal distributions favor polynomial-like functions, our architecture tended to produce Gaussian-like curves for its predictions. This difference stems from the mechanism by which each model fits its respective marginal functions. In GAMs, the b-spline technique is limited to smooth polynomial-like fits, while our neural network is built upon sigmoid non-linearities, which can produce any arbitrary function, but tend to favor a slope of zero near the end points. While this difference is often negligible, like in this dataset, there are instances where it can impact model accuracy. 

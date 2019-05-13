@@ -1,0 +1,116 @@
+
+\section{Deep(ish) Networks}
+
+\subsection{Background}
+
+Testing hypothesis \textbf{H6}: \textit{Our network architecture can be combined with deep networks to form more interpretable models in deep learning tasks.}
+
+This experiment examines the feasibility of combining our network with deep learning techniques to create more a interpretable deep neural network. Thus far, we've considered our network as a standalone entity similar to a random forest or a GAM. However, neural networks are well-known for their modularity and our implementation is no exception. By removing the sigmoid activation from the end of our network, we can create a marginal layer that can be inserted into different positions in a network. 
+
+In many high-dimensional deep learning tasks, the initial layers of the network often construct high-level representations of the input space which can be embedded as a lower dimensional vector. Auto-encoders \citep{Baldi2012AutoencodersArchitectures} are a particularly pertinent example of this phenomenon, as a type of network architecture that specializes in low-dimensional representations. Oftentimes, these low-dimensional representations are interpretable to a human user and can provide some insights into the final layers of the model.
+
+For instance, in image processing tasks, stacked convolutional and pooling layers are used to extract spatial features from a network. These features embed a low dimensional representation that is passed to one or more dense layers for the final analysis. In many applications, it is common to take a pre-trained network, freeze the weights, cut the dense layers off the end, and replace them with a new ready-to-train set of dense layers \citep{Pelka2018AnnotationNetworks}. 
+
+In the case of one dense layer, the post-convolutional phase of the network has linear power, potentially allowing for interpretation of the inputs, but limiting the functions the network can model. More dense layers can approximate more complex functions, but the network loses interpretability. In this experiment, we explore the potential of adding a marginal layer to the end of a convolutional network, allowing the network to generalize to more complex functions while maintaining a high level of interpretability. 
+
+
+\subsection{Setup}
+
+In this experiment, we train our neural network classifier on the pandemic dataset in two phases. In the first phase, we fit a convolutional network, known as the counter, to the images and predict the number t-cells and bacteria present. The first four layers of the counter employ 3-by-3 convolutions with stride one and output depths of size six, twelve, twelve, and eight. The network then uses 112-by-112 average pooling to convert the image into a vector of size eight, which is scaled by 1000 to speed training, and passed into a dense layer of output size two. Table \ref{table:counter_network} provides additional network architecture details.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+        Layer Type & Output Shape & Number of Parameters \\
+        \midrule
+            3-by-3 Convolution & (118, 118, 6)  & 60   \\
+            3-by-3 Convolution & (116, 116, 12) & 660  \\
+            3-by-3 Convolution & (114, 114, 12) & 1308 \\
+            3-by-3 Convolution & (112, 112, 8)  & 872  \\
+            112-by-112 Average Pooling & (1, 1, 8) & 0 \\
+            Scaling (1/1000) & (1, 1, 8) & 0        \\
+            Flatten & (8) & 0 \\
+            Dense & (2) & 18 \\
+        \bottomrule
+    \end{tabular}
+\caption{Counter network architecture. This network is designed to count the number of bacteria and t-cells on screen and output the results to the experimental layers.}
+\label{table:counter_network}
+\end{table}
+
+The counter is trained on all 870 network images using the default Adam optimizer and mean squared error loss for 1000 epochs. No regularization or dropout was necessary. Once trained, the network weights are frozen and the counter is used as the input for our two experimental networks.
+
+The first experimental network is a simple dense layer and sigmoid activation attached to the end of the counter network. The second experimental network attaches a marginal layer of width 12 before the dense layer to delinearize the network outputs. Both approaches are highly interpretable after the counting layers and the objective of this experiment is to determine which is more successful at correctly classifying infection lethality. 
+
+Both experimental networks are fit on a new set of 870 images with the goal of correctly classifying lethality. Both networks are trained using an Adam optimizer with a learning rate of 0.1 and a binary cross-entropy loss function for 5000 epochs. After training, a new set of 870 images is generated, and ROC AUC and F1 scores are reported for both models. Scatter plots are also included for visual analysis. 
+
+
+\subsection{Results}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrr}
+        \toprule
+        Network Layer & Dense & Marginal \\
+        \midrule
+        F1 Score & 0.766 & 0.927 \\
+        ROC AUC  & 0.847 & 0.976 \\
+        \bottomrule
+    \end{tabular}
+\caption{F1 and ROC AUC scores for the two networks. The marginal layer outperforms the dense layer significantly in both metrics.}
+\label{table:network}
+\end{table}
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/ex6/counter_true.svg}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/ex6/counter_observed.svg}
+\end{subfigure}
+\caption{Differences between the true image distribution (left) and the distribution observed by the counter (right). While trends in the underlying distribution are still visible, imperfections in the counter network have caused the network outputs to wander from their real positions.}
+\label{fig:pandemic_counter_comp}
+\end{figure}
+
+
+\begin{figure}
+\includesvg[width=0.65\textwidth]{fig/ex6/ex6_cmp.svg}
+\centering
+\caption{Final outputs for the single dense layer network. With an f1 score of 0.766 and a ROC AUC of 0.847, the single dense layer has missed the non-linearity in the counter's output and under-fit the data.}
+\label{fig:pandemic_cmp_result}
+\end{figure}
+
+
+\begin{figure}
+\includesvg[width=0.65\textwidth]{fig/ex6/ex6_mnn.svg}
+\centering
+\caption{Final outputs for the marginal layer network. With an f1 score of 0.927 and a ROC AUC of 0.976, our marginal layer has correctly fit the non-linearity in the counter's output and provides a good model for the data.}
+\label{fig:pandemic_mnn_result}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/ex6/bacteria_marginal.svg}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includesvg[width=0.9\linewidth]{fig/ex6/t_cell_marginal.svg}
+\end{subfigure}
+\caption{Marginal distributions for bacteria counts (left) and t-cell counts (right). The final layer of the network is behaving intuitively. Low bacteria counts radically increase the chance of survival while high bacteria counts radically lower it. In general, more bacteria is worse for survival. Low t-cell counts are bad for survival, but only if the bacteria counts are above ten. The positive marginal impact peaks around 30-35, where the infection is at its maximum point.}
+\label{fig:pandemic_marginals}
+\end{figure}
+
+
+\subsection{Analysis}
+
+This experiment supports our hypothesis that a marginal layer will outperform a single dense layer while still providing high transparency to the network outputs. As illustrated in Figure \ref{fig:pandemic_cmp_result}, the lower power of a single dense layer limits the network to a single linear classification boundary. This limitation greatly restricts the number of functions the network can approximate, and in this instance, this led to a sharp drop in accuracy. 
+
+The marginal layer performs much better, as illustrated in Figure \ref{fig:pandemic_mnn_result}, finding a smooth and effective classification boundary between the two sets of points. The model maintains high interpretability, as illustrated in Figure \ref{fig:pandemic_marginals}, behaving intuitively across the domain of both variables. 
+
+This experiment demonstrates that marginal layers can be effectively added into deeper networks and that these layers can improve interpretability without decreasing model accuracy. Because the marginal distribution is itself part of the network, it \update{should be} possible to further improve the accuracy of the model by unfreezing the initial weights and allowing the gradient to propagate through it. This change could provide minor improvements in instances where the pre-trained model does not provide a perfect match for the outputs, or even to train the entire model completely from scratch. 

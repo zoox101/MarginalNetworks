@@ -1,0 +1,51 @@
+
+The contributions of this research are four-fold:
+
+\begin{enumerate}
+\item We have demonstrated that it is possible to improve interpretability in neural networks through the addition of GAM-like layers, and provided the first open source implementation to do so. 
+\item We have investigated some of the limitations of this architecture and demonstrated that those limitations often do not significantly impact performance in real-world classification tasks.
+\item We have developed the Pandemic benchmark dataset for low-power small-sample image classification tasks.
+\item We have demonstrated that marginal layers can be used effectively in conjunction with deeper neural networks. 
+\end{enumerate}
+
+This research has demonstrated a novel technique for improving interpretability in neural networks. By removing joint terms, we are able to simulate GAM-like behavior, providing results \update{that closely match} state-of-the-art techniques on many real-world classification problems. Our neural network architecture is a reliable and effective way to increase the power of logistic regression without sacrificing model interpretability. While the GAM paradigm does break down in several contrived instances, our research has demonstrated that these situations are relatively uncommon in real-world tabular datasets. 
+
+In addition, we have shown that unlike traditional GAMs, our architecture can be applied within deeper networks. As illustrated in our pandemic experiment, applying marginal layers at the end of a deep network can help improve the transparency of the final output, while maintaining high levels of accuracy. The key to the technique is to find an effective and interpretable embedding that can be fed into a marginal layer that provides the final classification. 
+
+All the code used in this research is open sourced and publicly available online at https://github.com/zoox101/MarginalNetworks. The marginal layer code in Keras is also available at the end of this document. 
+
+Finally, like any machine learning technique, this architecture has a number of advantages and disadvantages compared to other approaches. 
+
+\section{Advantages}
+
+\paragraph{Interpretability:} Perhaps the most important advantage GAM-like networks is the strong interpretability of the outputs. Unlike dense networks, which are difficult to decode, the outputs from our architecture can be represented as a sum of one-dimensional functions. These one-dimensional functions are easy to visualize and interpret, making this architecture one of the most transparent available.
+
+\paragraph{Overfitting Protection:} Compared to dense networks, our architecture is less prone to overfitting, and thus requires less data to effectively train. Removing the joint connections reduces the network’s degree of freedom by a factor of $n - 1$, making it harder for the network to exploit random noise.
+
+\paragraph{Partial Automatic Feature Selection:} Due partially to the decreased degrees of freedom and partially to a strong propensity to automatically zero outputs, this network architecture performs a basic form of feature selection during the marginal delinearization process. If a feature has no impact on classification, the delinearization step tends to push the marginal output to zero, as illustrated by the ID field in the sky survey example. This effect reduces the need for extensive data preprocessing before training the model.
+
+\section{Disadvantages}
+
+\paragraph{No Joint Terms:} The obvious main drawback of this architecture is the lack of joint terms in the network, which breaks the assumptions required to make the network a universal approximator. While  tests on real-world datasets suggest that this often has little impact on classification accuracy, there do exist situations, such as the XOR problem, that this architecture cannot handle.
+
+\paragraph{Training Time:} Training a neural network is always significantly slower than training tree-based methods. While our architecture performs better in some instances, traditional GAMs still train significantly faster and typically provide nearly identical results. We aim to improve on this issue in our future work.
+
+\paragraph{Classification Only:} In this work, we limited our experiments to classification tasks, as initial testing suggested that our architecture performs significantly worse than state-of-the-art on regression-type problems. This effect is likely caused by the increased impact of joint terms in regression tasks, as corroborating signals often  have a diminishing effect on model output. However, additional work is needed to confirm or discount this hypothesis. 
+
+%For instance, if sunny skies and long days are both strong signals for hot weather, then a long sunny day is likely to be hot. 
+
+\section{Future Work}
+
+While this work has demonstrated some of the advantages of this type of network architecture, this work has opened up at least two major avenues that I believe should be investigated in future research. 
+
+First, more investigation is needed to determine how well this technique applies to regression problems. I suspect that this type of network architecture will struggle in this domain, but to date no formal experiments have been run confirming that claim.
+
+Second, more work needs to be done on the delinearization technique for this type of neural network. In our implementation, we rely on the implicit power of the network to force the delinearization of each of the network marginals. However, while a network of this type can theoretically model any arbitrary univariate function, it often has difficulty converging on the best one. Local minima cause issues for the network, and slow non-linear training times make convergence a pain. However, by implementing a version of the GAM b-spline delinearization technique within a marginal layer, I believe these training times can be improved tremendously. 
+
+
+
+
+
+
+
+

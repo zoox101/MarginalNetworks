@@ -1,0 +1,85 @@
+\section{GAMs vs. Networks}
+
+\subsection{Setup}
+
+Testing hypothesis \textbf{H2}. \textit{Our network architecture will outperform b-spline GAMs in real-world datasets where the optimal non-linearity is uni-modal with high variance over a small domain.}
+
+Experiment two compares our architecture to the pyGAM implementation on the Sloan sky survey dataset. This dataset was selected for the red-shift variable, which is strongly predictive of a celestial object being a galaxy over a very narrow range of intermediate values. We expect that traditional GAMs will struggle to fit this variable effectively, as a large number of b-splines are required to effectively model the feature. Our method will have few issues fitting this variable, as our neural network has additional flexibility to allocate power in this small domain. 
+
+We compare our architecture with eight hidden units against GAMs with an increasing number of splines. We then compare the f1-scores of the two models, as well as a selection of marginal distributions to determine which method provided superior results. 
+
+\subsection{Results}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrrrrrrrr}
+        \toprule
+        Splines &     5  &     10 &     15 &     20 &     25 &     30 &     35 &     40 \\
+        \midrule
+        F1 Score &  0.929 &  0.939 &  0.951 &  0.961 &  0.969 &  0.971 &  0.973 &  0.975 \\
+        \bottomrule
+    \end{tabular}
+\caption{F1 scores on the stellar dataset for a GAM with an increasing number of b-splines. F1 scores, precision, recall, and accuracy increase with an increasing number of splines, but the model fails to converge beyond 40.}
+\end{table}
+
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrrrrrrrr}
+        \toprule
+        Hidden Units & 5 \\
+        \midrule
+        F1 Score & 0.986  \\
+        \bottomrule
+    \end{tabular}
+\caption{F1 scores on the stellar dataset for our network architecture. The neural network is more accurate than the GAM with only eight hidden units.}
+\end{table}
+
+
+\begin{figure}
+    \centering
+    \includesvg[width=0.65\textwidth]{fig/gam_spline_f1.svg}
+    \caption{F1 scores on the stellar dataset for a GAM with an increasing number of b-splines. Model accuracy increases with an increasing number of splines but fails to converge beyond 40.}
+    \centering
+    \label{fig:gam_spline_f1}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includesvg[width=0.9\linewidth]{fig/mnn_redshift.svg}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includesvg[width=0.9\linewidth]{fig/gam_redshift.svg}
+    \end{subfigure}
+    \caption{Marginal for the redshift variable in the network and GAM implementations. Commonly used as a proxy for distance, the peak in the network marginal corresponds to the high-density region for galaxies in the stellar dataset. The 40-spline GAM was unable to achieve a similar fit, and the slow decay at high redshift values decreases overall model performance.}
+    \label{fig:redshift}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includesvg[width=0.9\linewidth]{fig/mnn_field.svg}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includesvg[width=0.9\linewidth]{fig/gam_field.svg}
+    \end{subfigure}
+    \caption{Marginals for the field variable in network and GAM implementations. Represents the location in the sky where the telescope is looking. A large number of b-splines has caused the GAM model to overfit the variable when compared to the network architecture.}
+    \label{fig:field}
+\end{figure}
+
+
+\subsection{Analysis}
+
+Results from this experiment support our hypothesis that our architecture is more capable than traditional b-spline GAMs at fitting functions with high output variance over small univariate domains. While increasing the number of splines did help to improve the GAM's performance, it came at the cost of significantly increased complexity. Rather than five b-splines per feature, the best performing GAMs required upwards of forty, which significantly increased training time, made the model less likely to converge, and decreased the interpretability of the remaining marginals. Furthermore, the model's accuracy could not be increased further by adding additional splines, at the model failed to converge when pushed beyond forty. 
+
+Even the 40-spline GAM model was unable to match the accuracy of our network architecture with just eight hidden units. Unlike GAMs, neural networks can transform the location of their non-linearities by modifying their input weights, allowing the model to better focus its limited power on more important regions. For this dataset, this ability was extremely important, as our method was able to concentrate its effort in the most important section of the input space, providing a smooth, sensible marginal distribution for the red-shift variable.
+
+The use of marginal layers in the input network is a major improvement to univariate function approximation when compared to traditional b-spline GAMs. Our architecture is able to provide a better fit with less power thanks to additional non-linear flexibility. While b-splines are technically able to emulate any univariate function to an arbitrary degree of accuracy, in practice, this functionality requires careful tuning and lots of guesswork on the part of the modeler. Our network handles this process automatically, making it generally superior to the b-spline approach. Further work with activation functions in this type of marginal architecture is likely to improve these results even further. 
+
